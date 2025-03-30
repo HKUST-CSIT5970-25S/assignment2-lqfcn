@@ -103,9 +103,9 @@ public class CORStripes extends Configured implements Tool {
 			}
 			/*
 			 * TODO: Your implementation goes here.
-			 */
-			Arrays.sort(sorted_word_set);
+			 */		
 			String[] words = sorted_word_set.toArray(new String[0]);
+			Arrays.sort(words);
 			MapWritable stripe = new MapWritable();
 
 			for (int i = 0; i < words.length; i++) {
