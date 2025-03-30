@@ -109,7 +109,7 @@ public class CORStripes extends Configured implements Tool {
 
 			for (int i = 0; i < words.length; i++) {
 				for (int j = i + 1; j < words.length; j++) {
-					stripe.put((Text) words[j], ONE);
+					stripe.put(new Text(words[j]), ONE);
 				}
 				WORD.set(words[i]);
 				context.write(WORD, stripe);
@@ -130,13 +130,13 @@ public class CORStripes extends Configured implements Tool {
 			 * TODO: Your implementation goes here.
 			 */
 			Iterator<MapWritable> iter = values.iterator();
-			MapWritable<Text, IntWritable> stripe = new MapWritable<Text, IntWritable>();
+			MapWritable stripe = new MapWritable();
 			
 			while (iter.hasNext()) {
-				for (MapWritable.Entry<Text, IntWritable> e : iter.next().entrySet()) {
-					Text word = e.getKey();
+				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
+					Text word = (Text) e.getKey();
 					if (stripe.containsKey(word)) {
-						SUM.set((e.getValue()).get() + (stripe.get(word)).get());
+						SUM.set(((IntWritable) e.getValue()).get() + (stripe.get(word)).get());
 						stripe.put(word, SUM);
 					} else {
 						stripe.put(word, e.getValue());
@@ -204,10 +204,10 @@ public class CORStripes extends Configured implements Tool {
 			MapWritable stripe = new MapWritable();
 			
 			while (iter.hasNext()) {
-				for (MapWritable.Entry<Text, IntWritable> e : iter.next().entrySet()) {
-					Text word = e.getKey();
+				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
+					Text word = (Text) e.getKey();
 					if (stripe.containsKey(word)) {
-						SUM.set((e.getValue()).get() + (stripe.get(word)).get());
+						SUM.set(((IntWritable) e.getValue()).get() + (stripe.get(word)).get());
 						stripe.put(word, SUM);
 					} else {
 						stripe.put(word, e.getValue());
