@@ -217,7 +217,7 @@ public class CORStripes extends Configured implements Tool {
 			}
 
 			for (MapWritable.Entry<Writable, Writable> e : stripe.entrySet()) {
-				FREQ.set((float) ((IntWritable) e.getValue()).get() / (float) (word_total_map.get(key.toString()).intValue() * word_total_map.get(e.getKey().toString()).intValue()));
+				FREQ.set((double) ((IntWritable) e.getValue()).get() / (double) (word_total_map.get(key.toString()).intValue() * word_total_map.get(e.getKey().toString()).intValue()));
 				BIGRAM.set(key.toString(), e.getKey().toString());
 				context.write(BIGRAM, FREQ);
 			}
