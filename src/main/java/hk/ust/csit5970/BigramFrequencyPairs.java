@@ -63,9 +63,9 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					if (w.length() == 0) {
 						continue;
 					}
-					BIGRAM.set(previous_word, w);
-					context.write(BIGRAM, ONE);
 					BIGRAM.set(previous_word, "*");
+					context.write(BIGRAM, ONE);
+					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
@@ -98,8 +98,10 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			if (key.getRightElement() == "*") {
 				SUM.set((int) sum);
 				VALUE.set(sum);
-			} else {
+			} else if (SUM.get() != 0){
 				VALUE.set(sum / SUM.get());
+			} else {
+				VALUE.set(sum);
 			}
 
 			context.write(key, VALUE);
