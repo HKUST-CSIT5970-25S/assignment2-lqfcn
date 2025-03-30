@@ -114,7 +114,7 @@ public class CORPairs extends Configured implements Tool {
 						}
 						context.write(BIGRAM, ONE);
 					}
-					wordsInLine.put(currentWord, 1)
+					wordsInLine.put(currentWord, 1);
 				}
 			}
 		}
