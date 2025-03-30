@@ -109,8 +109,7 @@ public class CORStripes extends Configured implements Tool {
 
 			for (int i = 0; i < words.length; i++) {
 				for (int j = i + 1; j < words.length; j++) {
-					WORD.set(words[j]);
-					stripe.put(WORD, ONE);
+					stripe.put((Text) words[j], ONE);
 				}
 				WORD.set(words[i]);
 				context.write(WORD, stripe);
@@ -131,15 +130,16 @@ public class CORStripes extends Configured implements Tool {
 			 * TODO: Your implementation goes here.
 			 */
 			Iterator<MapWritable> iter = values.iterator();
-			MapWritable stripe = new MapWritable();
+			MapWritable<Text, IntWritable> stripe = new MapWritable<Text, IntWritable>();
 			
 			while (iter.hasNext()) {
-				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
-					if (stripe.containsKey(e.getKey())) {
-						SUM.set(((IntWritable) e.getValue()).get() + ((IntWritable) stripe.get(e.getKey())).get());
-						stripe.put(e.getKey(), SUM);
+				for (MapWritable.Entry<Text, IntWritable> e : iter.next().entrySet()) {
+					Text word = e.getKey();
+					if (stripe.containsKey(word)) {
+						SUM.set((e.getValue()).get() + (stripe.get(word)).get());
+						stripe.put(word, SUM);
 					} else {
-						stripe.put(e.getKey(), e.getValue());
+						stripe.put(word, e.getValue());
 					}
 				}
 			}
@@ -204,12 +204,13 @@ public class CORStripes extends Configured implements Tool {
 			MapWritable stripe = new MapWritable();
 			
 			while (iter.hasNext()) {
-				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
-					if (stripe.containsKey(e.getKey())) {
-						SUM.set(((IntWritable) e.getValue()).get() + ((IntWritable) stripe.get(e.getKey())).get());
-						stripe.put(e.getKey(), SUM);
+				for (MapWritable.Entry<Text, IntWritable> e : iter.next().entrySet()) {
+					Text word = e.getKey();
+					if (stripe.containsKey(word)) {
+						SUM.set((e.getValue()).get() + (stripe.get(word)).get());
+						stripe.put(word, SUM);
 					} else {
-						stripe.put(e.getKey(), e.getValue());
+						stripe.put(word, e.getValue());
 					}
 				}
 			}
