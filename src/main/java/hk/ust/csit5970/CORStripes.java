@@ -133,9 +133,9 @@ public class CORStripes extends Configured implements Tool {
 			while (iter.hasNext()) {
 				for (Entry<Writable, Writable> e : iter.next().get().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
-						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()))
+						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()));
 					} else {
-						stripe.put(e.getKey(), e.getValue())
+						stripe.put(e.getKey(), e.getValue());
 					}
 				}
 			}
@@ -201,9 +201,9 @@ public class CORStripes extends Configured implements Tool {
 			while (iter.hasNext()) {
 				for (Entry<Writable, Writable> e : iter.next().get().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
-						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()))
+						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()));
 					} else {
-						stripe.put(e.getKey(), e.getValue())
+						stripe.put(e.getKey(), e.getValue());
 					}
 				}
 			}
