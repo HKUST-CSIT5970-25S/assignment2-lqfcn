@@ -104,6 +104,7 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			word_total_map.clear();
 			while(doc_tokenizer.hasMoreTokens()) { 
 				String currentWord = doc_tokenizer.nextToken();
 				// Skip empty words
