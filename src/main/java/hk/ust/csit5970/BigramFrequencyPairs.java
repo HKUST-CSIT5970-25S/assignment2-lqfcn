@@ -80,7 +80,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			Reducer<PairOfStrings, IntWritable, PairOfStrings, FloatWritable> {
 
 		// Reuse objects.
-		private final static IntWritable SUM = new IntWritable();
+		private final static FloatWritable SUM = new FloatWritable();
 		private final static FloatWritable VALUE = new FloatWritable();
 
 		@Override
@@ -96,7 +96,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 				sum += iter.next().get();
 			}
 			if (key.getRightElement().equals("")) {
-				SUM.set((int) sum);
+				SUM.set(sum);
 				VALUE.set(sum);
 			} else if (SUM.get() != 0){
 				VALUE.set(sum / SUM.get());
