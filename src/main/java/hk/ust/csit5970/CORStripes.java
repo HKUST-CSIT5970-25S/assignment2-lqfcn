@@ -16,6 +16,10 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import hk.ust.csit5970.CORStripes.CORStripesCombiner2;
+import hk.ust.csit5970.CORStripes.CORStripesMapper2;
+import hk.ust.csit5970.CORStripes.CORStripesReducer2;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,6 +31,8 @@ import java.util.*;
  */
 public class CORStripes extends Configured implements Tool {
 	private static final Logger LOG = Logger.getLogger(CORStripes.class);
+	private static final Text WORD = new Text();
+	private static final IntWritable ONE = new IntWritable(1);
 
 	/*
 	 * TODO: write your first-pass Mapper here.
@@ -43,6 +49,15 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			while(doc_tokenizer.hasMoreTokens()) { 
+				String word = doc_tokenizer.nextToken();
+				// Skip empty words
+				if (word.length() == 0) {
+					continue;
+				}
+				WORD.set(word);
+				context.write(WORD, ONE);
+			}
 		}
 	}
 
@@ -51,11 +66,21 @@ public class CORStripes extends Configured implements Tool {
 	 */
 	private static class CORReducer1 extends
 			Reducer<Text, IntWritable, Text, IntWritable> {
+				
+		private final static IntWritable SUM = new IntWritable();
+
 		@Override
 		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Iterator<IntWritable> iter = values.iterator();
+			int sum = 0;
+			while (iter.hasNext()) {
+				sum += iter.next().get();
+			}
+			SUM.set(sum);
+			context.write(key, SUM);
 		}
 	}
 
@@ -63,6 +88,9 @@ public class CORStripes extends Configured implements Tool {
 	 * TODO: Write your second-pass Mapper here.
 	 */
 	public static class CORStripesMapper2 extends Mapper<LongWritable, Text, Text, MapWritable> {
+
+		private static final Text WORD = new Text();
+
 		@Override
 		protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 			Set<String> sorted_word_set = new TreeSet<String>();
@@ -75,6 +103,16 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			String[] words = sorted_word_set.toArray();
+			MapWritable stripe = new MapWritable();
+
+			for (int i = 0; i < words.length; i++) {
+				for (int j = i + 1; j < words.length; j++) {
+					stripe.put(words[j], 1);
+				}
+				WORD.set(words[i]);
+				context.write(WORD, stripe);
+			}
 		}
 	}
 
@@ -89,6 +127,19 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Iterator<MapWritable> iter = values.iterator();
+			MapWritable stripe = new MapWritable();
+			
+			while (iter.hasNext()) {
+				for (Entry<Writable, Writable> e : iter.next().get().entrySet()) {
+					if (stripe.containsKey(e.getKey())) {
+						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()))
+					} else {
+						stripe.put(e.getKey(), e.getValue())
+					}
+				}
+			}
+			context.write(key, stripe);
 		}
 	}
 
@@ -98,6 +149,8 @@ public class CORStripes extends Configured implements Tool {
 	public static class CORStripesReducer2 extends Reducer<Text, MapWritable, PairOfStrings, DoubleWritable> {
 		private static Map<String, Integer> word_total_map = new HashMap<String, Integer>();
 		private static IntWritable ZERO = new IntWritable(0);
+		private final static DoubleWritable FREQ = new DoubleWritable();
+		private static final PairOfStrings BIGRAM = new PairOfStrings();
 
 		/*
 		 * Preload the middle result file.
@@ -142,6 +195,24 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Iterator<MapWritable> iter = values.iterator();
+			MapWritable stripe = new MapWritable();
+			
+			while (iter.hasNext()) {
+				for (Entry<Writable, Writable> e : iter.next().get().entrySet()) {
+					if (stripe.containsKey(e.getKey())) {
+						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()))
+					} else {
+						stripe.put(e.getKey(), e.getValue())
+					}
+				}
+			}
+
+			for (Entry<Writable, Writable> e : stripe.entrySet()) {
+				FREQ.set(e.getValue() / (word_total_map.get(key).intValue() * word_total_map.get(e.getKey()).intValue()));
+				BIGRAM.set(key, e.getKey());
+				context.write(BIGRAM, FREQ);
+			}
 		}
 	}
 
