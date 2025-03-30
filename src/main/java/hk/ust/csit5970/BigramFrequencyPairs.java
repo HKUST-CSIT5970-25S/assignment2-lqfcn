@@ -96,11 +96,12 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			}
 			if (key.getRightElement() == "") {
 				SUM.set(sum);
-				context.write(key, SUM);
+				VALUE.set((float) sum);
 			} else {
 				VALUE.set((float) sum / SUM.get());
-				context.write(key, SUM);
 			}
+
+			context.write(key, VALUE);
 		}
 	}
 	
