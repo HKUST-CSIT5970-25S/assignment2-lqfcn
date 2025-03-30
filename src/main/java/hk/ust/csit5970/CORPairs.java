@@ -39,6 +39,7 @@ public class CORPairs extends Configured implements Tool {
 	private static class CORMapper1 extends
 			Mapper<LongWritable, Text, Text, IntWritable> {
 
+		private static final Text WORD = new Text();
 		private static final IntWritable ONE = new IntWritable(1);
 
 		@Override
@@ -57,7 +58,8 @@ public class CORPairs extends Configured implements Tool {
 				if (word.length() == 0) {
 					continue;
 				}
-				context.write(word, ONE);
+				WORD.set(word);
+				context.write(WORD, ONE);
 			}
 		}
 	}
