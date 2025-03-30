@@ -67,6 +67,9 @@ public class CORPairs extends Configured implements Tool {
 	 */
 	private static class CORReducer1 extends
 			Reducer<Text, IntWritable, Text, IntWritable> {
+
+		private final static IntWritable SUM = new IntWritable();
+
 		@Override
 		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			/*
@@ -147,6 +150,7 @@ public class CORPairs extends Configured implements Tool {
 	 */
 	public static class CORPairsReducer2 extends Reducer<PairOfStrings, IntWritable, PairOfStrings, DoubleWritable> {
 		private final static Map<String, Integer> word_total_map = new HashMap<String, Integer>();
+		private final static DoubleWritable FREQ = new DoubleWritable();
 
 		/*
 		 * Preload the middle result file.
@@ -192,11 +196,12 @@ public class CORPairs extends Configured implements Tool {
 			 * TODO: Your implementation goes here.
 			 */
 			Iterator<IntWritable> iter = values.iterator();
-			float sum = 0;
+			double sum = 0;
 			while (iter.hasNext()) {
 				sum += iter.next().get();
 			}
-			context.write(key, sum / (word_total_map.get(key.getLeftElement()).intValue() * word_total_map.get(key.getRightElement()).intValue()));
+			FREQ.set(sum / (word_total_map.get(key.getLeftElement()).intValue() * word_total_map.get(key.getRightElement()).intValue()));
+			context.write(key, FREQ);
 		}
 	}
 
