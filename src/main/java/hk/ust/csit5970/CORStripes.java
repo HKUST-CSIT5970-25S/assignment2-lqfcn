@@ -104,6 +104,7 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Arrays.sort(sorted_word_set);
 			String[] words = sorted_word_set.toArray(new String[0]);
 			MapWritable stripe = new MapWritable();
 
@@ -216,7 +217,7 @@ public class CORStripes extends Configured implements Tool {
 			}
 
 			for (MapWritable.Entry<Writable, Writable> e : stripe.entrySet()) {
-				FREQ.set(((IntWritable) e.getValue()).get() / (word_total_map.get(key.toString()).intValue() * word_total_map.get(e.getKey().toString()).intValue()));
+				FREQ.set((float) ((IntWritable) e.getValue()).get() / (word_total_map.get(key.toString()).intValue() * word_total_map.get(e.getKey().toString()).intValue()));
 				BIGRAM.set(key.toString(), e.getKey().toString());
 				context.write(BIGRAM, FREQ);
 			}
