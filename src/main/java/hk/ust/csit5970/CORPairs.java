@@ -5,10 +5,6 @@ import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.*;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
@@ -19,8 +15,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import hk.ust.csit5970.CORPairs.CORPairsMapper2;
+import hk.ust.csit5970.CORPairs.CORPairsReducer2;
+
 import org.apache.hadoop.io.*;
 
 
@@ -29,8 +26,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.*;
-import java.util.Arrays;
-import java.util.HashMap;
 
 /**
  * Compute the bigram count using "pairs" approach
@@ -43,6 +38,9 @@ public class CORPairs extends Configured implements Tool {
 	 */
 	private static class CORMapper1 extends
 			Mapper<LongWritable, Text, Text, IntWritable> {
+
+		private static final IntWritable ONE = new IntWritable(1);
+
 		@Override
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
@@ -53,6 +51,14 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			while(doc_tokenizer.hasMoreTokens()) { 
+				String word = doc_tokenizer.nextToken();
+				// Skip empty words
+				if (word.length() == 0) {
+					continue;
+				}
+				context.write(word, ONE);
+			}
 		}
 	}
 
@@ -66,6 +72,13 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Iterator<IntWritable> iter = values.iterator();
+			int sum = 0;
+			while (iter.hasNext()) {
+				sum += iter.next().get();
+			}
+			SUM.set(sum);
+			context.write(key, SUM);
 		}
 	}
 
@@ -74,6 +87,11 @@ public class CORPairs extends Configured implements Tool {
 	 * TODO: Write your second-pass Mapper here.
 	 */
 	public static class CORPairsMapper2 extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
+
+		private static final HashMap<String, Integer> wordsInLine = new HashMap<String, Integer>();
+		private static final IntWritable ONE = new IntWritable(1);
+		private static final PairOfStrings BIGRAM = new PairOfStrings();
+
 		@Override
 		protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 			// Please use this tokenizer! DO NOT implement a tokenizer by yourself!
@@ -81,6 +99,24 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			while(doc_tokenizer.hasMoreTokens()) { 
+				String currentWord = doc_tokenizer.nextToken();
+				// Skip empty words
+				if (currentWord.length() == 0) {
+					continue;
+				}
+				if (!wordsInLine.containsKey(currentWord)) {
+					for (String previousWord : wordsInLine.keySet()) {
+						if (previousWord.compareTo(currentWord) < 0) {
+							BIGRAM.set(previousWord, currentWord);
+						} else {
+							BIGRAM.set(currentWord, previousWord);
+						}
+						context.write(BIGRAM, ONE);
+					}
+					wordsInLine.put(currentWord, 1)
+				}
+			}
 		}
 	}
 
@@ -88,11 +124,21 @@ public class CORPairs extends Configured implements Tool {
 	 * TODO: Write your second-pass Combiner here.
 	 */
 	private static class CORPairsCombiner2 extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+
+		private final static IntWritable SUM = new IntWritable();
+		
 		@Override
 		protected void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Iterator<IntWritable> iter = values.iterator();
+			int sum = 0;
+			while (iter.hasNext()) {
+				sum += iter.next().get();
+			}
+			SUM.set(sum);
+			context.write(key, SUM);
 		}
 	}
 
@@ -145,6 +191,12 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			Iterator<IntWritable> iter = values.iterator();
+			float sum = 0;
+			while (iter.hasNext()) {
+				sum += iter.next().get();
+			}
+			context.write(key, sum / (word_total_map.get(key.getLeftElement()).intValue() * word_total_map.get(key.getRightElement()).intValue()));
 		}
 	}
 
