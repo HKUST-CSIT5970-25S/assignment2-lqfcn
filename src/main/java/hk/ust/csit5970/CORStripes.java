@@ -90,6 +90,7 @@ public class CORStripes extends Configured implements Tool {
 	public static class CORStripesMapper2 extends Mapper<LongWritable, Text, Text, MapWritable> {
 
 		private static final Text WORD = new Text();
+		private static final IntWritable ONE = new IntWritable(1);
 
 		@Override
 		protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -103,12 +104,13 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
-			String[] words = sorted_word_set.toArray();
+			String[] words = sorted_word_set.toArray(new String[0]);
 			MapWritable stripe = new MapWritable();
 
 			for (int i = 0; i < words.length; i++) {
 				for (int j = i + 1; j < words.length; j++) {
-					stripe.put(words[j], 1);
+					WORD.set(words[j]);
+					stripe.put(WORD, ONE);
 				}
 				WORD.set(words[i]);
 				context.write(WORD, stripe);
@@ -131,7 +133,7 @@ public class CORStripes extends Configured implements Tool {
 			MapWritable stripe = new MapWritable();
 			
 			while (iter.hasNext()) {
-				for (Entry<Writable, Writable> e : iter.next().get().entrySet()) {
+				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
 						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()));
 					} else {
@@ -199,7 +201,7 @@ public class CORStripes extends Configured implements Tool {
 			MapWritable stripe = new MapWritable();
 			
 			while (iter.hasNext()) {
-				for (Entry<Writable, Writable> e : iter.next().get().entrySet()) {
+				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
 						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()));
 					} else {
@@ -208,7 +210,7 @@ public class CORStripes extends Configured implements Tool {
 				}
 			}
 
-			for (Entry<Writable, Writable> e : stripe.entrySet()) {
+			for (MapWritable.Entry<Writable, Writable> e : stripe.entrySet()) {
 				FREQ.set(e.getValue() / (word_total_map.get(key).intValue() * word_total_map.get(e.getKey()).intValue()));
 				BIGRAM.set(key, e.getKey());
 				context.write(BIGRAM, FREQ);
