@@ -136,7 +136,7 @@ public class CORStripes extends Configured implements Tool {
 				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					Text word = (Text) e.getKey();
 					if (stripe.containsKey(word)) {
-						SUM.set(((IntWritable) e.getValue()).get() + (stripe.get(word)).get());
+						SUM.set(((IntWritable) e.getValue()).get() + ((IntWritable) stripe.get(word)).get());
 						stripe.put(word, SUM);
 					} else {
 						stripe.put(word, e.getValue());
@@ -207,7 +207,7 @@ public class CORStripes extends Configured implements Tool {
 				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					Text word = (Text) e.getKey();
 					if (stripe.containsKey(word)) {
-						SUM.set(((IntWritable) e.getValue()).get() + (stripe.get(word)).get());
+						SUM.set(((IntWritable) e.getValue()).get() + ((IntWritable) stripe.get(word)).get());
 						stripe.put(word, SUM);
 					} else {
 						stripe.put(word, e.getValue());
