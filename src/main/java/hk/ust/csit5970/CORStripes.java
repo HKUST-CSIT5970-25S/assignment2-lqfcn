@@ -123,6 +123,7 @@ public class CORStripes extends Configured implements Tool {
 	 */
 	public static class CORStripesCombiner2 extends Reducer<Text, MapWritable, Text, MapWritable> {
 		static IntWritable ZERO = new IntWritable(0);
+		private static IntWritable SUM = new IntWritable(0);
 
 		@Override
 		protected void reduce(Text key, Iterable<MapWritable> values, Context context) throws IOException, InterruptedException {
@@ -135,7 +136,8 @@ public class CORStripes extends Configured implements Tool {
 			while (iter.hasNext()) {
 				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
-						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()));
+						SUM.set(e.getValue().get() + stripe.get(e.getKey()).get());
+						stripe.put(e.getKey(), SUM);
 					} else {
 						stripe.put(e.getKey(), e.getValue());
 					}
@@ -151,6 +153,7 @@ public class CORStripes extends Configured implements Tool {
 	public static class CORStripesReducer2 extends Reducer<Text, MapWritable, PairOfStrings, DoubleWritable> {
 		private static Map<String, Integer> word_total_map = new HashMap<String, Integer>();
 		private static IntWritable ZERO = new IntWritable(0);
+		private static IntWritable SUM = new IntWritable(0);
 		private final static DoubleWritable FREQ = new DoubleWritable();
 		private static final PairOfStrings BIGRAM = new PairOfStrings();
 
@@ -203,7 +206,8 @@ public class CORStripes extends Configured implements Tool {
 			while (iter.hasNext()) {
 				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
-						stripe.put(e.getKey(), e.getValue() + stripe.get(e.getKey()));
+						SUM.set(e.getValue().get() + stripe.get(e.getKey()).get());
+						stripe.put(e.getKey(), SUM);
 					} else {
 						stripe.put(e.getKey(), e.getValue());
 					}
@@ -211,8 +215,8 @@ public class CORStripes extends Configured implements Tool {
 			}
 
 			for (MapWritable.Entry<Writable, Writable> e : stripe.entrySet()) {
-				FREQ.set(e.getValue() / (word_total_map.get(key).intValue() * word_total_map.get(e.getKey()).intValue()));
-				BIGRAM.set(key, e.getKey());
+				FREQ.set(e.getValue().get() / (word_total_map.get(key).intValue() * word_total_map.get(e.getKey()).intValue()));
+				BIGRAM.set(key.get(), e.getKey().get());
 				context.write(BIGRAM, FREQ);
 			}
 		}
