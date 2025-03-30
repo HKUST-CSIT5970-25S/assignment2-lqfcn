@@ -136,7 +136,7 @@ public class CORStripes extends Configured implements Tool {
 			while (iter.hasNext()) {
 				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
-						SUM.set(e.getValue().get() + stripe.get(e.getKey()).get());
+						SUM.set(((IntWritable) e.getValue()).get() + ((IntWritable) stripe.get(e.getKey())).get());
 						stripe.put(e.getKey(), SUM);
 					} else {
 						stripe.put(e.getKey(), e.getValue());
@@ -206,7 +206,7 @@ public class CORStripes extends Configured implements Tool {
 			while (iter.hasNext()) {
 				for (MapWritable.Entry<Writable, Writable> e : iter.next().entrySet()) {
 					if (stripe.containsKey(e.getKey())) {
-						SUM.set(e.getValue().get() + stripe.get(e.getKey()).get());
+						SUM.set(((IntWritable) e.getValue()).get() + ((IntWritable) stripe.get(e.getKey())).get());
 						stripe.put(e.getKey(), SUM);
 					} else {
 						stripe.put(e.getKey(), e.getValue());
@@ -215,8 +215,8 @@ public class CORStripes extends Configured implements Tool {
 			}
 
 			for (MapWritable.Entry<Writable, Writable> e : stripe.entrySet()) {
-				FREQ.set(e.getValue().get() / (word_total_map.get(key).intValue() * word_total_map.get(e.getKey()).intValue()));
-				BIGRAM.set(key.get(), e.getKey().get());
+				FREQ.set(((IntWritable) e.getValue()).get() / (word_total_map.get(key).intValue() * word_total_map.get(e.getKey()).intValue()));
+				BIGRAM.set(key.toString(), e.getKey().toString());
 				context.write(BIGRAM, FREQ);
 			}
 		}
