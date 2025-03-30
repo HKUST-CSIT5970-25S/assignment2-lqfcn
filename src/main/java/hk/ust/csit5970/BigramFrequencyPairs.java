@@ -95,7 +95,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			while (iter.hasNext()) {
 				sum += iter.next().get();
 			}
-			if (key.getRightElement() == "*") {
+			if (key.getRightElement().equals("*")) {
 				SUM.set((int) sum);
 				VALUE.set(sum);
 			} else if (SUM.get() != 0){
